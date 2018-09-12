@@ -1,4 +1,5 @@
 #import <React/RCTView.h>
+#import <React/RCTDefines.h>
 
 @class RCTUIWebView;
 
@@ -34,6 +35,6 @@ shouldStartLoadForRequest:(NSMutableDictionary<NSString *, id> *)request
 - (void)reload;
 - (void)stopLoading;
 - (void)postMessage:(NSString *)message;
-- (void)injectJavaScript:(NSString *)script;
+- (nullable NSString *)injectJavaScript:(NSString *)script;
 
 @end

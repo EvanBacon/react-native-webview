@@ -92,9 +92,9 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithCoder:(NSCoder *)aDecoder)
   [_webView stringByEvaluatingJavaScriptFromString:source];
 }
 
-- (void)injectJavaScript:(NSString *)script
+- (nullable NSString *)injectJavaScript:(NSString *)script
 {
-  [_webView stringByEvaluatingJavaScriptFromString:script];
+  return [_webView stringByEvaluatingJavaScriptFromString:script];
 }
 
 - (void)setSource:(NSDictionary *)source

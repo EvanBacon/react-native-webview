@@ -8,6 +8,7 @@
 #import "RCTWKWebView.h"
 #import <React/RCTConvert.h>
 #import <React/RCTAutoInsetsProtocol.h>
+#import <React/RCTBridge.h>
 
 static NSString *const MessageHanderName = @"ReactNative";
 
@@ -371,6 +372,32 @@ static NSString *const MessageHanderName = @"ReactNative";
 - (void)injectJavaScript:(NSString *)script
 {
   [self evaluateJS: script thenCall: nil];
+}
+
+- (nullable NSString *)evalJavaScript:(NSString *)script resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject
+{
+    __block NSString *resultString = nil;
+    __block BOOL finished = NO;
+    
+    [self.webView evaluateJavaScript:script completionHandler: ^(id result, NSError *error) {
+        if (error == nil) {
+            if (result != nil) {
+                resultString = [NSString stringWithFormat:@"%@", result];
+                if (resolve != nil) {
+                    resolve(resultString);
+                }
+            }
+        } else if (reject) {
+            reject(@"E_INVALID_SCRIPT", error.localizedDescription, error);
+        }
+        finished = YES;
+    }];
+    
+    while (!finished)
+    {
+        [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate distantFuture]];
+    }
+    return resultString;
 }
 
 - (void)goForward

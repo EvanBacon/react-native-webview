@@ -114,6 +114,34 @@ RCT_EXPORT_METHOD(injectJavaScript:(nonnull NSNumber *)reactTag script:(NSString
   }];
 }
 
+RCT_EXPORT_METHOD(evalJavaScriptAsync:(nonnull NSNumber *)reactTag script:(NSString *)script resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
+{
+    [self.bridge.uiManager addUIBlock:^(__unused RCTUIManager *uiManager, NSDictionary<NSNumber *, RCTUIWebView *> *viewRegistry) {
+        RCTUIWebView *view = viewRegistry[reactTag];
+        if (![view isKindOfClass:[RCTUIWebView class]]) {
+            RCTLogError(@"Invalid view returned from registry, expecting RCTUIWebView, got: %@", view);
+        } else {
+            NSString *output = [view injectJavaScript:script];
+            resolve(output);
+        }
+    }];
+}
+
+RCT_EXPORT_BLOCKING_SYNCHRONOUS_METHOD(evalJavaScript:(nonnull NSNumber *)reactTag script:(NSString *)script)
+{
+    __block NSString *output = nil;
+    dispatch_sync(dispatch_get_main_queue(), ^{
+        UIView *view = [self.bridge.uiManager viewForReactTag:reactTag];
+        if (![view isKindOfClass:[RCTUIWebView class]]) {
+            RCTLogError(@"Invalid view returned from registry, expecting RCTUIWebView, got: %@", view);
+        } else {
+            RCTUIWebView *webView = (RCTUIWebView *)view;
+            output = [webView injectJavaScript:script];
+        }
+    });
+    return output;
+}
+
 #pragma mark - Exported synchronous methods
 
 - (BOOL)webView:(__unused RCTUIWebView *)webView

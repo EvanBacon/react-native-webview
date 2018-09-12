@@ -595,6 +595,40 @@ public class RCTWebViewManager extends SimpleViewManager<WebView> {
     }
   }
 
+  @ReactMethod()
+  public void evalJavaScriptAsync(
+    final int viewTag, 
+    final String script, 
+    final Promise promise
+    ) {
+      ReactApplicationContext reactContext = getReactApplicationContext();
+      UIManagerModule uiManager = reactContext.getNativeModule(UIManagerModule.class);
+      uiManager.addUIBlock(new UIBlock() {
+      @Override
+      public void execute(NativeViewHierarchyManager nativeViewHierarchyManager) {
+        try {
+          view = (WebView) nativeViewHierarchyManager.resolveView(glViewTag);
+          view.evaluateJavascript(script, new ValueCallback<String>() {
+            @Override
+            public void onReceiveValue(String value) {
+              promise.resolve(value);
+            }
+          });
+        } catch (Exception e) {
+          promise.reject("E_BAD_VIEW_TAG", "RCTWebViewManager.evalJavaScriptAsync: Expected a RCTWebView");
+          return;
+        }
+      });
+    });
+  }
+
+  @ReactMethod(isBlockingSynchronousMethod = true)
+  public String evalJavaScript(final int viewTag, String script) {
+    // TODO:Bacon: There is no easy way to make this sync. 
+    // view.evalJavascript(script, null);
+    return null;
+  }
+
   @Override
   protected void addEventEmitters(ThemedReactContext reactContext, WebView view) {
     // Do not register default touch emitter and let WebView implementation handle touches

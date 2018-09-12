@@ -151,6 +151,14 @@ class WebView extends React.Component {
     }
   }
 
+  getViewManager = () => {
+    const { useWebKit, nativeConfig = {} } = this.props;
+    return (
+      nativeConfig.viewManager ||
+      (useWebKit ? RCTWKWebViewManager : RCTUIWebViewManager)
+    );
+  }
+
   render() {
     let otherView = null;
 
@@ -174,7 +182,7 @@ class WebView extends React.Component {
       );
     } else if (this.state.viewState !== WebViewState.IDLE) {
       console.error(
-        'RCTWebView invalid state encountered: ' + this.state.loading,
+        'RCTUIWebView invalid state encountered: ' + this.state.loading,
       );
     }
 
@@ -189,13 +197,7 @@ class WebView extends React.Component {
 
     const nativeConfig = this.props.nativeConfig || {};
 
-    let viewManager = nativeConfig.viewManager;
-
-    if (this.props.useWebKit) {
-      viewManager = viewManager || RCTWKWebViewManager;
-    } else {
-      viewManager = viewManager || RCTUIWebViewManager;
-    }
+    const viewManager = this.getViewManager();
 
     const compiledWhitelist = [
       'about:blank',
@@ -241,7 +243,7 @@ class WebView extends React.Component {
     if (this.props.useWebKit) {
       NativeWebView = NativeWebView || RCTWKWebView;
     } else {
-      NativeWebView = NativeWebView || RCTWebView;
+      NativeWebView = NativeWebView || RCTUIWebView;
     }
 
     const webView = (
@@ -284,7 +286,7 @@ class WebView extends React.Component {
 
   _getCommands() {
     if (!this.props.useWebKit) {
-      return UIManager.RCTWebView.Commands;
+      return UIManager.RCTUIWebView.Commands;
     }
 
     return UIManager.RCTWKWebView.Commands;
@@ -367,6 +369,17 @@ class WebView extends React.Component {
     );
   };
 
+  evalJavaScriptAsync = script => {
+    return this.getViewManager().evalJavaScriptAsync(
+      this.getWebViewHandle(),
+      script,
+    );
+  };
+
+  evalJavaScript = script => {
+    return this.getViewManager().evalJavaScript(this.getWebViewHandle(), script);
+  };
+
   /**
    * We return an event with a bunch of fields including:
    *  url, title, loading, canGoBack, canGoForward
@@ -443,8 +456,8 @@ class WebView extends React.Component {
   }
 }
 
-const RCTWebView = requireNativeComponent(
-  'RCTWebView',
+const RCTUIWebView = requireNativeComponent(
+  'RCTUIWebView',
   WebView,
   WebView.extraNativeComponentConfig,
 );

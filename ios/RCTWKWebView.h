@@ -7,6 +7,7 @@
 
 #import <React/RCTView.h>
 #import <React/RCTDefines.h>
+#import <React/RCTBridge.h>
 #import <WebKit/WebKit.h>
 
 @class RCTWKWebView;
@@ -38,6 +39,7 @@ shouldStartLoadForRequest:(NSMutableDictionary<NSString *, id> *)request
 
 - (void)postMessage:(NSString *)message;
 - (void)injectJavaScript:(NSString *)script;
+- (nullable NSString *)evalJavaScript:(NSString *)script resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject;
 - (void)goForward;
 - (void)goBack;
 - (void)reload;
